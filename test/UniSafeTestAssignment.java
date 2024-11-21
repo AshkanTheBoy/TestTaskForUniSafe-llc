@@ -101,20 +101,94 @@ public class UniSafeTestAssignment {
         listOfFigures.sort(comp);
     }
     //напиши функцию, которая разворачивает все фигуры по часовой меняя координаты местами
+    /*
+    Находим центральную точку у фигуры
+    Находим вектор к ней от каждой вершины
+    Находим векторное произведение для каждых двух последующих векторов и прибавляем к сумме
+    Если сумма положительная - направление против часовой стрелки
+    Если отрицательная - по часовой
+     */
     public static void rearrangeCordsInElements(List<List<List<Integer>>> listOfFigures){
+        //делаем плоский список для простоты
+        List<Integer> allCords = new ArrayList<>();
+        //ищем центральную точку
+        int xCordsSum; //сумма х-координат
+        int xCount; //кол-во х-координат
+        int yCordsSum; //сумма у-координат
+        int yCount; //кол-во у-координат
+        double[] centroid = new double[2]; //центральная точка
+        double[] currVectorToCenter = new double[2]; //текущий вектор к центру
+        double[] nextVectorToCenter = new double[2]; //следующий вектор к центру
+        for (List<List<Integer>> listOfElements: listOfFigures){
+            xCordsSum = 0;
+            xCount = 0;
+            yCordsSum = 0;
+            yCount = 0;
+            allCords.clear();
+            listOfElements.forEach(allCords::addAll);
+            for (int i = 0; i<allCords.size();i++){
+                if (i%2==0){
+                    xCordsSum+=allCords.get(i);
+                    xCount++;
+                } else {
+                    yCordsSum+=allCords.get(i);
+                    yCount++;
+                }
+            }
+
+            //получаем координаты центра фигуры
+            centroid[0] = (double)xCordsSum/xCount;
+            centroid[1] = (double)yCordsSum/yCount;
+
+            int x1, y1, x2, y2;
+            double result = 0;
+            //ищем сумму всех векторных произведений
+            for (int i = 0; i<allCords.size()-2;i+=2){
+                //текущая координата
+                x1 = allCords.get(i);
+                y1 = allCords.get(i+1);
+                //следующая координата
+                x2 = allCords.get(i+2);
+                y2 = allCords.get(i+3);
+
+                //текущий вектор к центру
+                currVectorToCenter[0] = x1-centroid[0];
+                currVectorToCenter[1] = y1-centroid[1];
+
+                //следующий вектор к центру
+                nextVectorToCenter[0] = x2-centroid[0];
+                nextVectorToCenter[1] = y2-centroid[1];
+
+                //результат += векторное произведение данных двух
+                result += (currVectorToCenter[0]*nextVectorToCenter[1])-
+                        (currVectorToCenter[1]*nextVectorToCenter[0]);
+//                System.out.println();
+//                System.out.println(result);
+//                System.out.println();
+            }
+
+//            System.out.println("FINAL RESULT-----");
+//            System.out.println(result);
+//            System.out.println();
+            //разворачиваем, если результат положительный (больше нуля)
+            if (result>0){
+                reverseCuttingDirection(listOfElements);
+            }
+        }
+    }
+
+    public static void reverseCuttingDirection(List<List<Integer>> listOfElements){
         Integer temp1;
         Integer temp2;
-        for (List<List<Integer>> listOfElements: listOfFigures){
-            Collections.reverse(listOfElements); //разворачиваем лист элементов
-            for (List<Integer> elements: listOfElements){
-                if (elements.size()>2){ //свапаем первую и последнюю точку у кривых
-                    temp1 = elements.getFirst();
-                    temp2 = elements.get(1);
-                    elements.set(0,elements.get(4));
-                    elements.set(1,elements.get(5));
-                    elements.set(4,temp1);
-                    elements.set(5,temp2);
-                }
+        Collections.reverse(listOfElements); //разворачиваем лист элементов
+        for (List<Integer> elements: listOfElements){
+            if (elements.size()>2){ //свапаем первую и последнюю точку у кривых
+                temp1 = elements.getFirst();
+                temp2 = elements.get(1);
+                elements.set(0,elements.get(4));
+                elements.set(1,elements.get(5));
+                elements.set(4,temp1);
+                elements.set(5,temp2);
             }
         }
     }
